@@ -1,0 +1,12 @@
+This is a collection of various reusable libraries made for
+use in STM32F103 projects. Can be easily be ported to other
+Cortex-M3 µCs from STM.
+
++ OneWire: a library to work with OneWire devices, utilizing
+  U(S)ART as OneWire master. Planned to employ also a simple
+  bitbanging mode and DMA for sending/reading OneWire bits.
+
++ schematics: various schematics from Eagle (with exported
+  images for quick viewing):
+  -- ds18b20-stm32f103: how to connect DS18B20 temperature
+     sensor to STM32F103 for usage with OneWire library
