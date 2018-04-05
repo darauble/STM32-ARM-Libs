@@ -27,68 +27,15 @@
 #define KR_KEY_Reload    ((uint16_t)0xAAAA)
 #define KR_KEY_Enable    ((uint16_t)0xCCCC)
 
-#define CR1_CLEAR_Mask				((uint16_t)0xE9F3)  /*!< USART CR1 Mask */
-#define CR2_STOP_CLEAR_Mask		 ((uint16_t)0xCFFF)  /*!< USART CR2 STOP Bits Mask */
-#define CR3_CLEAR_Mask				((uint16_t)0xFCFF)  /*!< USART CR3 Mask */
-
-
 // Adjusted to 72 MHz clock
 const uint32_t bauds[] =  { 1200,   4800,   9600,   19200,  38400,  57600,  115200 };
 const uint16_t brr_u1[] = { 0xEA60, 0x3A98, 0x1D4C, 0x0EA6, 0x0753, 0x04E2, 0x0271 };
 const uint16_t brr_ux[] = { 0x7530, 0x1D4C, 0x0EA6, 0x0753, 0x03A9, 0x0271, 0x0138 };
 
-static void enable_usart_full(USART_TypeDef *USARTx, uint32_t baud_rate, uint32_t USART_Periph, GPIO_TypeDef *GPIOx, uint16_t tx_pin, uint16_t rx_pin) {
-	USART_InitTypeDef usartConfig;
-	GPIO_InitTypeDef gpioConfig;
-
-	if (USARTx == USART1) {
-		//RCC_APB2PeriphClockCmd(USART_Periph, ENABLE);
-		RCC->APB2ENR |= RCC_APB2RSTR_USART1RST;
-	} else if (USARTx == USART2) {
-		RCC->APB1ENR |= RCC_APB1RSTR_USART2RST;
-	}
-#if !defined (STM32F10X_LD) && !defined (STM32F10X_LD_VL)
-	else if (USARTx == USART3) {
-		RCC->APB1ENR |= RCC_APB1RSTR_USART3RST;
-	}
-#endif
-#if defined (STM32F10X_HD) || defined  (STM32F10X_CL) || defined  (STM32F10X_XL)
-	else if (USARTx == UART4) {
-		RCC->APB1ENR |= RCC_APB1RSTR_UART4RST;
-	} else if (USARTx == UART5) {
-		RCC->APB1ENR |= RCC_APB1RSTR_UART5RST;
-	}
-#endif
-	if (GPIOx == GPIOA) {
-		GPIOA_ENABLE;
-	}
-
-	gpioConfig.GPIO_Mode = GPIO_Mode_AF_PP;
-	gpioConfig.GPIO_Pin = tx_pin;
-	gpioConfig.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOx, &gpioConfig);
-
-	//PA10 = USART1.RX => Input
-	gpioConfig.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-	gpioConfig.GPIO_Pin = rx_pin;
-	GPIO_Init(GPIOx, &gpioConfig);
-
-
-	usartConfig.USART_BaudRate = baud_rate;
-	usartConfig.USART_WordLength = USART_WordLength_8b;
-	usartConfig.USART_StopBits = USART_StopBits_1;
-	usartConfig.USART_Parity = USART_Parity_No;
-	usartConfig.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-	usartConfig.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-	USART_Init(USARTx, &usartConfig);
-	// Enable usart
-	USARTx->CR1 |= USART_CR1_UE;
-	//USART_Cmd(USARTx, ENABLE);
-}
 
 void enable_usart(USART_TypeDef *USARTx, uint32_t baud_rate) {
 	RCC->APB2ENR |=  RCC_APB2ENR_AFIOEN;
-	if      (USARTx == USART1) { //enable_usart_full(USARTx, baud_rate, RCC_APB2Periph_USART1, GPIOA, GPIO_Pin_9, GPIO_Pin_10);
+	if      (USARTx == USART1) {
 		RCC->APB2ENR |= RCC_APB2RSTR_USART1RST;
 		RCC->APB2ENR |=  RCC_APB2ENR_IOPAEN;
 		GPIOA->CRH &= ~(GPIO_CRH_CNF9 | GPIO_CRH_MODE9 | GPIO_CRH_CNF10 | GPIO_CRH_MODE10); // Clear configuration
@@ -96,8 +43,6 @@ void enable_usart(USART_TypeDef *USARTx, uint32_t baud_rate) {
 		//*/
 	}
 	else if (USARTx == USART2) {
-		//RCC_APB2PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
-		//enable_usart_full(USART2, baud_rate, RCC_APB1Periph_USART2, GPIOA, GPIO_Pin_2, GPIO_Pin_3);
 		RCC->APB1ENR |= RCC_APB1RSTR_USART2RST;
 		RCC->APB2ENR |=  RCC_APB2ENR_IOPAEN;
 		GPIOA->CRL &= ~(GPIO_CRL_CNF2 | GPIO_CRL_MODE2 | GPIO_CRL_CNF3 | GPIO_CRL_MODE3);
@@ -115,11 +60,12 @@ void enable_usart(USART_TypeDef *USARTx, uint32_t baud_rate) {
 		// TODO implement
 	}
 
-	USARTx->CR1 |= USART_CR1_UE;
-	USARTx->CR2 &= CR2_STOP_CLEAR_Mask; // Clear CR2 stop bits, leave as is for Stop Bits 1
-	USARTx->CR1 &= CR1_CLEAR_Mask; // Clear CR1 config
-	USARTx->CR1 |= USART_Mode_Rx | USART_Mode_Tx; // 8b word, no parity, RX/TX
-	USARTx->CR3 &= CR3_CLEAR_Mask; // Clear CR3 config, leave as is, no hw control
+	// Clear config
+	USARTx->CR1 = 0;
+	USARTx->CR2 = 0;
+	USARTx->CR3 = 0;
+	USARTx->CR1 |= USART_CR1_UE | USART_CR1_RE | USART_CR1_TE;
+
 
 	uint8_t i;
 	for (i=0; i<7; i++) {
@@ -144,13 +90,13 @@ void enable_usart(USART_TypeDef *USARTx, uint32_t baud_rate) {
 
 // TODO: implement
 void disable_usart(USART_TypeDef *USARTx){
-	USART_Cmd(USARTx, DISABLE);
+	USARTx->CR1 &= ~USART_CR1_UE;
 
-	if      (USARTx == USART1) { RCC_APB2PeriphClockCmd(RCC_APB1Periph_USART2, DISABLE); }
-	else if (USARTx == USART2) { RCC_APB2PeriphClockCmd(RCC_APB1Periph_USART2, DISABLE); }
-	else if (USARTx == USART3) { RCC_APB2PeriphClockCmd(RCC_APB1Periph_USART3, DISABLE); }
-	else if (USARTx == UART4)  { RCC_APB2PeriphClockCmd(RCC_APB1Periph_UART4, DISABLE); }
-	else if (USARTx == UART5)  { RCC_APB2PeriphClockCmd(RCC_APB1Periph_UART5, DISABLE); }
+	if      (USARTx == USART1) { RCC->APB2ENR &= ~RCC_APB2RSTR_USART1RST; }
+	else if (USARTx == USART2) { RCC->APB1ENR &= ~RCC_APB1RSTR_USART2RST; }
+	else if (USARTx == USART3) { RCC->APB1ENR &= ~RCC_APB1RSTR_USART3RST;; }
+	else if (USARTx == UART4)  { RCC->APB1ENR &= ~RCC_APB1Periph_UART4; }
+	else if (USARTx == UART5)  { RCC->APB1ENR &= ~RCC_APB1Periph_UART5; }
 }
 
 int print_usart(USART_TypeDef *USARTx, const char *str) {
@@ -164,7 +110,6 @@ int print_usart(USART_TypeDef *USARTx, const char *str) {
 			// Reset IWD
 			IWDG->KR = KR_KEY_Reload;
 		}
-		IWDG->KR = KR_KEY_Reload;
 		i++;
 		str++;
 	}
