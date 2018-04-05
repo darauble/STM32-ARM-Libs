@@ -1,6 +1,8 @@
 /*
  * The source of the OneWire protocol library for work with SMT32 Cortex-M3 microcontrolers
  *
+ * LIBRARY IS DEPRECATED AND NOT SUPPORTED ANYMORE.
+ *
  * onewire_usart_dma.c
  *
  *  Created on: Nov 22, 2016

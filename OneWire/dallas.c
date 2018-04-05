@@ -1,6 +1,8 @@
 /*
  * The implementation of the library to read Dallas temperature sensors.
  *
+ * LIBRARY IS DEPRECATED AND NOT SUPPORTED ANYMORE.
+ *
  * dallas.c
  *
  *  Created on: Dec 2, 2016

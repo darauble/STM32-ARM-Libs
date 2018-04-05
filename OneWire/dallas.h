@@ -3,6 +3,8 @@
  * OneWire library, which provides core underlying protocol functionality.
  * Intended for use with SMT32 Cortex-M3 microcontrolers.
  *
+ * LIBRARY IS DEPRECATED AND NOT SUPPORTED ANYMORE.
+ *
  * TODO:
  * - implement writing to scratchpad (set alarm threshold, conversion resolution etc.)
  * - implement handling of different sensors

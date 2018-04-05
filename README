@@ -8,6 +8,10 @@ Cortex-M3 µCs from STM.
   sensor's data. Uses simple bitbanging and µs delays.
 
 + OneWire
+
+  **Deprecated**
+  
+  This library is deprecated and will not be supported.
   
   A library to work with OneWire devices, utilizing
   U(S)ART as OneWire master. Planned to employ also a simple
