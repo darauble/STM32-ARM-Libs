@@ -5,7 +5,7 @@
  *  inside interrupt routine(s).
  *
  *  Library is designed to be used with C pin of the rotary encoder
- *  connected to +3.3V, not the GND.
+ *  connected to either +3.3V or the GND, see define below.
  *
  *  Created on: Jan 18, 2016
  *      Author: Darau, blė
